@@ -358,8 +358,11 @@ def EfficientNet(input_shape,
         epsilon=batch_norm_epsilon)(x)
     x = Swish()(x)
 
+    num_blocks = sum([block_args.num_repeat for block_args in block_args_list])
+    drop_connect_rate_per_block = drop_connect_rate / float(num_blocks)
+
     # Blocks part
-    for block_args in block_args_list:
+    for block_idx, block_args in enumerate(block_args_list):
         assert block_args.num_repeat > 0
 
         # Update block input and output filters based on depth multiplier.
@@ -371,7 +374,7 @@ def EfficientNet(input_shape,
         x = MBConvBlock(block_args.input_filters, block_args.output_filters,
                         block_args.kernel_size, block_args.strides,
                         block_args.expand_ratio, block_args.se_ratio,
-                        block_args.identity_skip, drop_connect_rate,
+                        block_args.identity_skip, drop_connect_rate_per_block * block_idx,
                         batch_norm_momentum, batch_norm_epsilon, data_format)(x)
 
         if block_args.num_repeat > 1:
@@ -382,7 +385,7 @@ def EfficientNet(input_shape,
             x = MBConvBlock(block_args.input_filters, block_args.output_filters,
                             block_args.kernel_size, block_args.strides,
                             block_args.expand_ratio, block_args.se_ratio,
-                            block_args.identity_skip, drop_connect_rate,
+                            block_args.identity_skip, drop_connect_rate_per_block * block_idx,
                             batch_norm_momentum, batch_norm_epsilon, data_format)(x)
 
     # Head part
