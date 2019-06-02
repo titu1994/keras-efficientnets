@@ -50,7 +50,7 @@ Simply import `keras_efficientnets` and call either the model builder `Efficient
 ```python
 from keras_efficientnets import EfficientNetB0
 
-model = EfficientNetBXinput_size, classes=1000, include_top=True, weights='imagenet')
+model = EfficientNetB0(input_size, classes=1000, include_top=True, weights='imagenet')
 ```
 
 To construct custom EfficientNets, use the `EfficientNet` builder. The `EfficientNet` builder code requires a list of `BlockArgs`
