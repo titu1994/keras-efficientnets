@@ -6,6 +6,10 @@ from keras.utils.generic_utils import get_custom_objects
 
 class Swish(layers.Layer):
 
+    def __init__(self, **kwargs):
+        super(Swish, self).__init__(**kwargs)
+        self.supports_masking = True
+
     def call(self, inputs, training=None):
         return tf.nn.swish(inputs)
 
