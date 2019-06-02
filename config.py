@@ -67,7 +67,19 @@ class BlockArgs(object):
         return self
 
     def encode_block_string(self, block):
-        """Encodes a block to a string."""
+        """Encodes a block to a string.
+
+        Encoding Schema:
+        "rX_kX_sXX_eX_iX_oX{_se0.XX}{_noskip}"
+         - X is replaced by a any number ranging from 0-9
+         - {} encapsulates optional arguments
+
+        To deserialize an encoded block string, use
+        the class method :
+        ```python
+        BlockArgs.from_block_string(block_string)
+        ```
+        """
         args = [
             'r%d' % block.num_repeat,
             'k%d' % block.kernel_size,
@@ -87,6 +99,22 @@ class BlockArgs(object):
 
     @classmethod
     def from_block_string(cls, block_string):
+        """
+        Encoding Schema:
+        "rX_kX_sXX_eX_iX_oX{_se0.XX}{_noskip}"
+         - X is replaced by a any number ranging from 0-9
+         - {} encapsulates optional arguments
+
+        To deserialize an encoded block string, use
+        the class method :
+        ```python
+        BlockArgs.from_block_string(block_string)
+        ```
+
+        Returns:
+            BlockArgs object initialized with the block
+            string args.
+        """
         block = cls()
         return block.decode_block_string(block_string)
 
