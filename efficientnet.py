@@ -27,7 +27,6 @@ from keras import layers
 from keras.models import Model
 from keras.utils import get_file, get_source_inputs
 from keras_applications.imagenet_utils import _obtain_input_shape
-from skimage.transform import resize
 
 from config import BlockArgs, DEFAULT_BLOCK_LIST
 from layers import Swish, DropConnect
@@ -288,7 +287,6 @@ def EfficientNet(input_shape,
                  default_size=None,
                  **kwargs):
 
-
     if data_format is None:
         data_format = K.image_data_format()
 
@@ -407,24 +405,112 @@ def EfficientNet(input_shape,
 
     # Load weights
     if weights == 'imagenet':
-        if default_size == 224:  # mobile version
+        if default_size == 224:
             if include_top:
                 weights_path = get_file(
-                    'efficientnet-b0_imagenet_1000.h5',
+                    'efficientnet-b0.h5',
                     "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b0.h5",
-                    cache_subdir='models',
-                    file_hash=None)
+                    cache_subdir='models')
             else:
                 weights_path = get_file(
-                    'efficientnet-b0_imagenet_1000_notop.h5.h5',
+                    'efficientnet-b0_notop.h5.h5',
                     "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b0_notop.h5",
-                    cache_subdir='models',
-                    file_hash=None)
+                    cache_subdir='models')
             model.load_weights(weights_path)
 
+        elif default_size == 240:
+            if include_top:
+                weights_path = get_file(
+                    'efficientnet-b1.h5',
+                    "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b1.h5",
+                    cache_subdir='models')
+            else:
+                weights_path = get_file(
+                    'efficientnet-b1_notop.h5.h5',
+                    "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b1_notop.h5",
+                    cache_subdir='models')
+            model.load_weights(weights_path)
+
+        elif default_size == 260:
+            if include_top:
+                weights_path = get_file(
+                    'efficientnet-b2.h5',
+                    "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b2.h5",
+                    cache_subdir='models')
+            else:
+                weights_path = get_file(
+                    'efficientnet-b2_notop.h5.h5',
+                    "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b2_notop.h5",
+                    cache_subdir='models')
+            model.load_weights(weights_path)
+
+        elif default_size == 300:
+            if include_top:
+                weights_path = get_file(
+                    'efficientnet-b3.h5',
+                    "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b3.h5",
+                    cache_subdir='models')
+            else:
+                weights_path = get_file(
+                    'efficientnet-b3_notop.h5',
+                    "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b3_notop.h5",
+                    cache_subdir='models')
+            model.load_weights(weights_path)
+
+        # elif default_size == 380:
+        #     if include_top:
+        #         weights_path = get_file(
+        #             'efficientnet-b4.h5',
+        #             "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b4.h5",
+        #             cache_subdir='models')
+        #     else:
+        #         weights_path = get_file(
+        #             'efficientnet-b4_notoph5',
+        #             "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b4_notop.h5",
+        #             cache_subdir='models')
+        #     model.load_weights(weights_path)
+        #
+        # elif default_size == 456:
+        #     if include_top:
+        #         weights_path = get_file(
+        #             'efficientnet-b5.h5',
+        #             "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b5.h5",
+        #             cache_subdir='models')
+        #     else:
+        #         weights_path = get_file(
+        #             'efficientnet-b5_notop.h5',
+        #             "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b5_notop.h5",
+        #             cache_subdir='models')
+        #     model.load_weights(weights_path)
+        #
+        # elif default_size == 528:
+        #     if include_top:
+        #         weights_path = get_file(
+        #             'efficientnet-b6.h5',
+        #             "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b6.h5",
+        #             cache_subdir='models')
+        #     else:
+        #         weights_path = get_file(
+        #             'efficientnet-b6_notop.h5',
+        #             "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b6_notop.h5",
+        #             cache_subdir='models')
+        #     model.load_weights(weights_path)
+        #
+        # elif default_size == 600:
+        #     if include_top:
+        #         weights_path = get_file(
+        #             'efficientnet-b7.h5',
+        #             "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b7.h5",
+        #             cache_subdir='models')
+        #     else:
+        #         weights_path = get_file(
+        #             'efficientnet-b7_notop.h5',
+        #             "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b7_notop.h5",
+        #             cache_subdir='models')
+        #     model.load_weights(weights_path)
+
         else:
-            raise ValueError(
-                'ImageNet weights can only be loaded with EfficientNetB0-7')
+            raise ValueError('ImageNet weights can only be loaded with EfficientNetB0-7')
 
     elif weights is not None:
         model.load_weights(weights)
@@ -623,3 +709,8 @@ def EfficientNetB7(input_shape=None,
                         drop_connect_rate=drop_connect_rate,
                         data_format=data_format,
                         default_size=600)
+
+
+if __name__ == '__main__':
+    model = EfficientNetB0(include_top=True)
+    model.summary()
