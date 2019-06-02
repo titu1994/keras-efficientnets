@@ -32,6 +32,8 @@ from keras_applications.imagenet_utils import _obtain_input_shape
 from config import BlockArgs, DEFAULT_BLOCK_LIST
 from layers import Swish, DropConnect
 
+from keras_applications.imagenet_utils import preprocess_input as _preprocess
+
 __all__ = ['EfficientNet',
            'EfficientNetB0',
            'EfficientNetB1',
@@ -44,29 +46,8 @@ __all__ = ['EfficientNet',
            'preprocess_input']
 
 
-# Obtained from https://github.com/tensorflow/tpu/blob/master/models/official/efficientnet/main.py#L243-L244
-_IMAGENET_MEAN = np.array([0.485 * 255, 0.456 * 255, 0.406 * 255])
-_IMAGENET_STDDEV = np.array([0.229 * 255, 0.224 * 255, 0.225 * 255])
-
-
 def preprocess_input(x, data_format=None):
-    assert x.ndim == 3
-    assert x.shape[-1] == 3
-
-    if data_format is None:
-        data_format = K.image_data_format()
-
-    if data_format == 'channels_first':
-        mean = _IMAGENET_MEAN.reshape((3, 1, 1))
-        std = _IMAGENET_STDDEV.reshape((3, 1, 1))
-    else:
-        mean = _IMAGENET_MEAN.reshape((1, 1, 3))
-        std = _IMAGENET_STDDEV.reshape((1, 1, 3))
-
-    x = x - mean
-    x = x / std
-
-    return x
+    return _preprocess(x, data_format, mode='torch')
 
 
 # Obtained from https://github.com/tensorflow/tpu/blob/master/models/official/efficientnet/efficientnet_model.py
