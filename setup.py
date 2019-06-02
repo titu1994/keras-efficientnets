@@ -22,13 +22,20 @@ EMAIL = "titu1994@gmail.com"
 
 ###############################################################
 
+base_path = os.path.abspath(os.path.dirname(__file__))
+
+if LICENCE is None or LICENCE == '':
+    raise RuntimeError("Licence must be provided !")
+
+if os.path.exists(os.path.join(base_path, 'LICENCE')):
+    raise RuntimeError("Licence must be provided !")
+
+
 def get_version():
     """Return package version as listed in `__version__` in `init.py`."""
     init_py = open(os.path.join(PACKAGE_NAME, '__init__.py')).read()
     return re.search("__version__ = ['\"]([^'\"]+)['\"]", init_py).group(1)
 
-
-base_path = os.path.abspath(os.path.dirname(__file__))
 
 try:
     with open(os.path.join(base_path, 'requirements.txt'), encoding='utf-8') as f:
