@@ -28,6 +28,10 @@ In doing so, and using Neural Architecture Search to get the base configuration 
 
 # Installation
 
+## From PyPI:
+
+```$ pip install keras_efficientnets```
+
 ## From Master branch:
 
 ```
@@ -39,10 +43,6 @@ git clone https://github.com/titu1994/keras-efficientnets.git
 cd keras-efficientnets
 pip install .
 ```
-
-## From PyPI:
-
-````$ pip install keras_efficientnets```
 
 # Usage
 Simply import `efficientnet.py` and call either the model builder `EfficientNet` or the pre-built versions `EfficientNetBX` where `X` ranger from 0 to 7.
