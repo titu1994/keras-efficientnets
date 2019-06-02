@@ -105,4 +105,6 @@ venv.bak/
 
 # Remove translation files
 extract_weights/*
+dist/*
+build/*
 
