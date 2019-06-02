@@ -27,12 +27,15 @@ from keras import backend as K
 from keras import layers
 from keras.models import Model
 from keras.utils import get_file, get_source_inputs
+
 from keras_applications.imagenet_utils import _obtain_input_shape
+from keras_applications.imagenet_utils import preprocess_input as _preprocess
 
 from config import BlockArgs, DEFAULT_BLOCK_LIST
-from layers import Swish, DropConnect
+from custom_objects import EfficientNetConvInitializer
+from custom_objects import EfficientNetDenseInitializer
+from custom_objects import Swish, DropConnect
 
-from keras_applications.imagenet_utils import preprocess_input as _preprocess
 
 __all__ = ['EfficientNet',
            'EfficientNetB0',
@@ -48,47 +51,6 @@ __all__ = ['EfficientNet',
 
 def preprocess_input(x, data_format=None):
     return _preprocess(x, data_format, mode='torch')
-
-
-# Obtained from https://github.com/tensorflow/tpu/blob/master/models/official/efficientnet/efficientnet_model.py
-def conv_kernel_initializer(shape, dtype=K.floatx(), partition_info=None):
-    """Initialization for convolutional kernels.
-    The main difference with tf.variance_scaling_initializer is that
-    tf.variance_scaling_initializer uses a truncated normal with an uncorrected
-    standard deviation, whereas here we use a normal distribution. Similarly,
-    tf.contrib.layers.variance_scaling_initializer uses a truncated normal with
-    a corrected standard deviation.
-    Args:
-      shape: shape of variable
-      dtype: dtype of variable
-      partition_info: unused
-    Returns:
-      an initialization for the variable
-    """
-    del partition_info
-    kernel_height, kernel_width, _, out_filters = shape
-    fan_out = int(kernel_height * kernel_width * out_filters)
-    return tf.random_normal(
-        shape, mean=0.0, stddev=np.sqrt(2.0 / fan_out), dtype=dtype)
-
-
-# Obtained from https://github.com/tensorflow/tpu/blob/master/models/official/efficientnet/efficientnet_model.py
-def dense_kernel_initializer(shape, dtype=K.floatx(), partition_info=None):
-    """Initialization for dense kernels.
-    This initialization is equal to
-      tf.variance_scaling_initializer(scale=1.0/3.0, mode='fan_out',
-                                      distribution='uniform').
-    It is written out explicitly here for clarity.
-    Args:
-      shape: shape of variable
-      dtype: dtype of variable
-      partition_info: unused
-    Returns:
-      an initialization for the variable
-    """
-    del partition_info
-    init_range = 1.0 / np.sqrt(shape[1])
-    return tf.random_uniform(shape, -init_range, init_range, dtype=dtype)
 
 
 # Obtained from https://github.com/tensorflow/tpu/blob/master/models/official/efficientnet/efficientnet_model.py
@@ -146,7 +108,7 @@ def SEBlock(input_filters, se_ratio, expand_ratio, data_format=None):
             num_reduced_filters,
             kernel_size=[1, 1],
             strides=[1, 1],
-            kernel_initializer=conv_kernel_initializer,
+            kernel_initializer=EfficientNetConvInitializer(),
             padding='same',
             use_bias=True)(x)
         x = Swish()(x)
@@ -155,7 +117,7 @@ def SEBlock(input_filters, se_ratio, expand_ratio, data_format=None):
             filters,
             kernel_size=[1, 1],
             strides=[1, 1],
-            kernel_initializer=conv_kernel_initializer,
+            kernel_initializer=EfficientNetConvInitializer(),
             padding='same',
             use_bias=True)(x)
         x = layers.Activation('sigmoid')(x)
@@ -194,7 +156,7 @@ def MBConvBlock(input_filters, output_filters,
                 filters,
                 kernel_size=[1, 1],
                 strides=[1, 1],
-                kernel_initializer=conv_kernel_initializer,
+                kernel_initializer=EfficientNetConvInitializer(),
                 padding='same',
                 use_bias=False)(inputs)
             x = layers.BatchNormalization(
@@ -208,7 +170,7 @@ def MBConvBlock(input_filters, output_filters,
         x = layers.DepthwiseConv2D(
             [kernel_size, kernel_size],
             strides=strides,
-            depthwise_initializer=conv_kernel_initializer,
+            depthwise_initializer=EfficientNetConvInitializer(),
             padding='same',
             use_bias=False)(x)
         x = layers.BatchNormalization(
@@ -227,7 +189,7 @@ def MBConvBlock(input_filters, output_filters,
             output_filters,
             kernel_size=[1, 1],
             strides=[1, 1],
-            kernel_initializer=conv_kernel_initializer,
+            kernel_initializer=EfficientNetConvInitializer(),
             padding='same',
             use_bias=False)(x)
         x = layers.BatchNormalization(
@@ -390,7 +352,7 @@ def EfficientNet(input_shape,
                               depth_divisor, min_depth),
         kernel_size=[3, 3],
         strides=[2, 2],
-        kernel_initializer=conv_kernel_initializer,
+        kernel_initializer=EfficientNetConvInitializer(),
         padding='same',
         use_bias=False)(x)
     x = layers.BatchNormalization(
@@ -431,7 +393,7 @@ def EfficientNet(input_shape,
         filters=round_filters(1280, width_coefficient, depth_coefficient, min_depth),
         kernel_size=[1, 1],
         strides=[1, 1],
-        kernel_initializer=conv_kernel_initializer,
+        kernel_initializer=EfficientNetConvInitializer(),
         padding='same',
         use_bias=False)(x)
     x = layers.BatchNormalization(
@@ -446,7 +408,7 @@ def EfficientNet(input_shape,
         if dropout_rate > 0:
             x = layers.Dropout(dropout_rate)(x)
 
-        x = layers.Dense(classes, kernel_initializer=dense_kernel_initializer)(x)
+        x = layers.Dense(classes, kernel_initializer=EfficientNetDenseInitializer())(x)
         x = layers.Activation('softmax')(x)
 
     else:
@@ -1140,5 +1102,20 @@ def EfficientNetB7(input_shape=None,
 
 
 if __name__ == '__main__':
+    import os
+    from keras.models import load_model
+
     model = EfficientNetB0(include_top=True)
     model.summary()
+
+    model.save("temp.h5")
+
+    if os.path.exists('temp.h5'):
+        model = load_model('temp.h5', compile=False)
+        model.summary()
+
+    else:
+        raise FileNotFoundError("Keras model file not found !")
+
+    if os.path.exists('temp.h5'):
+        os.remove('temp.h5')
