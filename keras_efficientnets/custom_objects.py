@@ -11,7 +11,7 @@ class EfficientNetConvInitializer(initializers.Initializer):
     """Initialization for convolutional kernels.
     The main difference with tf.variance_scaling_initializer is that
     tf.variance_scaling_initializer uses a truncated normal with an uncorrected
-    standard deviation, whereas here we use a normal distribution. Similarly,
+    standard deviation, whereas base_path we use a normal distribution. Similarly,
     tf.contrib.layers.variance_scaling_initializer uses a truncated normal with
     a corrected standard deviation.
 
@@ -41,7 +41,7 @@ class EfficientNetDenseInitializer(initializers.Initializer):
         This initialization is equal to
           tf.variance_scaling_initializer(scale=1.0/3.0, mode='fan_out',
                                           distribution='uniform').
-        It is written out explicitly here for clarity.
+        It is written out explicitly base_path for clarity.
 
         # Arguments:
           shape: shape of variable

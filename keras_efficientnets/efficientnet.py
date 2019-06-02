@@ -17,12 +17,9 @@
   EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks.
   ICML'19, https://arxiv.org/abs/1905.11946
 """
-import os
 import math
 from typing import List
 
-import numpy as np
-import tensorflow as tf
 from keras import backend as K
 from keras import layers
 from keras.models import Model
@@ -31,10 +28,10 @@ from keras.utils import get_file, get_source_inputs
 from keras_applications.imagenet_utils import _obtain_input_shape
 from keras_applications.imagenet_utils import preprocess_input as _preprocess
 
-from config import BlockArgs, DEFAULT_BLOCK_LIST
-from custom_objects import EfficientNetConvInitializer
-from custom_objects import EfficientNetDenseInitializer
-from custom_objects import Swish, DropConnect
+from keras_efficientnets.config import BlockArgs, DEFAULT_BLOCK_LIST
+from keras_efficientnets.custom_objects import EfficientNetConvInitializer
+from keras_efficientnets.custom_objects import EfficientNetDenseInitializer
+from keras_efficientnets.custom_objects import Swish, DropConnect
 
 
 __all__ = ['EfficientNet',
