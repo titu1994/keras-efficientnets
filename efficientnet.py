@@ -17,6 +17,7 @@
   EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks.
   ICML'19, https://arxiv.org/abs/1905.11946
 """
+import os
 import math
 from typing import List
 
@@ -286,6 +287,82 @@ def EfficientNet(input_shape,
                  data_format=None,
                  default_size=None,
                  **kwargs):
+    """
+    Builder model for EfficientNets.
+
+    # Arguments:
+        input_shape: Optional shape tuple, the input shape
+            depends on the configuration, with a minimum
+            decided by the number of stride 2 operations.
+            When None is provided, it defaults to 224.
+            Considered the "Resolution" parameter from
+            the paper (inherently Resolution coefficient).
+        block_args_list: Optional List of BlockArgs, each
+            of which detail the arguments of the MBConvBlock.
+            If left as None, it defaults to the blocks
+            from the paper.
+        width_coefficient: Determines the number of channels
+            available per layer. Compound Coefficient that
+            needs to be found using grid search on a base
+            configuration model.
+        depth_coefficient: Determines the number of layers
+            available to the model. Compound Coefficient that
+            needs to be found using grid search on a base
+            configuration model.
+        include_top: Whether to include the fully-connected
+            layer at the top of the network.
+        weights: `None` (random initialization) or
+            `imagenet` (ImageNet weights)
+        input_tensor: Optional Keras tensor (i.e. output of
+            `layers.Input()`)
+            to use as image input for the model.
+        pooling: Optional pooling mode for feature extraction
+            when `include_top` is `False`.
+            - `None` means that the output of the model
+                will be the 4D tensor output of the
+                last convolutional layer.
+            - `avg` means that global average pooling
+                will be applied to the output of the
+                last convolutional layer, and thus
+                the output of the model will be a
+                2D tensor.
+            - `max` means that global max pooling will
+                be applied.
+        classes: Optional number of classes to classify images
+            into, only to be specified if `include_top` is True, and
+            if no `weights` argument is specified.
+        dropout_rate: Float, percentage of random dropout.
+        drop_connect_rate: Float, percentage of random droped
+            connections.
+        batch_norm_momentum: Float, default batch normalization
+            momentum. Obtained from the paper.
+        batch_norm_epsilon: Float, default batch normalization
+            epsilon. Obtained from the paper.
+        depth_divisor: Optional. Used when rounding off the coefficient
+             scaled channels and depth of the layers.
+        min_depth: Optional. Minimum depth value in order to
+            avoid blocks with 0 layers.
+        data_format: "channels_first" or "channels_last". If left
+            as None, defaults to the value set in ~/.keras.
+        default_size: Specifies the default image size of the model
+
+    # Raises:
+        - ValueError: If weights are not in 'imagenet' or None.
+        - ValueError: If weights are 'imagenet' and `classes` is
+            not 1000.
+
+    # Returns:
+        A Keras Model.
+    """
+    if not (weights in {'imagenet', None} or os.path.exists(weights)):
+        raise ValueError('The `weights` argument should be either '
+                         '`None` (random initialization), `imagenet` '
+                         '(pre-training on ImageNet), '
+                         'or the path to the weights file to be loaded.')
+
+    if weights == 'imagenet' and include_top and classes != 1000:
+        raise ValueError('If using `weights` as `"imagenet"` with `include_top` '
+                         'as true, `classes` should be 1000')
 
     if data_format is None:
         data_format = K.image_data_format()
@@ -297,6 +374,9 @@ def EfficientNet(input_shape,
 
     if default_size is None:
         default_size = 224
+
+    if block_args_list is None:
+        block_args_list = DEFAULT_BLOCK_LIST
 
     # count number of strides to compute min size
     stride_count = 1
@@ -527,7 +607,52 @@ def EfficientNetB0(input_shape=None,
                    dropout_rate=0.2,
                    drop_connect_rate=0.,
                    data_format=None):
+    """
+    Builds EfficientNet B0.
 
+    # Arguments:
+        input_shape: Optional shape tuple, the input shape
+            depends on the configuration, with a minimum
+            decided by the number of stride 2 operations.
+            When None is provided, it defaults to 224.
+            Considered the "Resolution" parameter from
+            the paper (inherently Resolution coefficient).
+        include_top: Whether to include the fully-connected
+            layer at the top of the network.
+        weights: `None` (random initialization) or
+            `imagenet` (ImageNet weights)
+        input_tensor: Optional Keras tensor (i.e. output of
+            `layers.Input()`)
+            to use as image input for the model.
+        pooling: Optional pooling mode for feature extraction
+            when `include_top` is `False`.
+            - `None` means that the output of the model
+                will be the 4D tensor output of the
+                last convolutional layer.
+            - `avg` means that global average pooling
+                will be applied to the output of the
+                last convolutional layer, and thus
+                the output of the model will be a
+                2D tensor.
+            - `max` means that global max pooling will
+                be applied.
+        classes: Optional number of classes to classify images
+            into, only to be specified if `include_top` is True, and
+            if no `weights` argument is specified.
+        dropout_rate: Float, percentage of random dropout.
+        drop_connect_rate: Float, percentage of random droped
+            connections.
+        data_format: "channels_first" or "channels_last". If left
+            as None, defaults to the value set in ~/.keras.
+
+    # Raises:
+        - ValueError: If weights are not in 'imagenet' or None.
+        - ValueError: If weights are 'imagenet' and `classes` is
+            not 1000.
+
+    # Returns:
+        A Keras Model.
+    """
     return EfficientNet(input_shape,
                         DEFAULT_BLOCK_LIST,
                         width_coefficient=1.0,
@@ -552,6 +677,52 @@ def EfficientNetB1(input_shape=None,
                    dropout_rate=0.2,
                    drop_connect_rate=0.,
                    data_format=None):
+    """
+    Builds EfficientNet B1.
+
+    # Arguments:
+        input_shape: Optional shape tuple, the input shape
+            depends on the configuration, with a minimum
+            decided by the number of stride 2 operations.
+            When None is provided, it defaults to 224.
+            Considered the "Resolution" parameter from
+            the paper (inherently Resolution coefficient).
+        include_top: Whether to include the fully-connected
+            layer at the top of the network.
+        weights: `None` (random initialization) or
+            `imagenet` (ImageNet weights)
+        input_tensor: Optional Keras tensor (i.e. output of
+            `layers.Input()`)
+            to use as image input for the model.
+        pooling: Optional pooling mode for feature extraction
+            when `include_top` is `False`.
+            - `None` means that the output of the model
+                will be the 4D tensor output of the
+                last convolutional layer.
+            - `avg` means that global average pooling
+                will be applied to the output of the
+                last convolutional layer, and thus
+                the output of the model will be a
+                2D tensor.
+            - `max` means that global max pooling will
+                be applied.
+        classes: Optional number of classes to classify images
+            into, only to be specified if `include_top` is True, and
+            if no `weights` argument is specified.
+        dropout_rate: Float, percentage of random dropout.
+        drop_connect_rate: Float, percentage of random droped
+            connections.
+        data_format: "channels_first" or "channels_last". If left
+            as None, defaults to the value set in ~/.keras.
+
+    # Raises:
+        - ValueError: If weights are not in 'imagenet' or None.
+        - ValueError: If weights are 'imagenet' and `classes` is
+            not 1000.
+
+    # Returns:
+        A Keras Model.
+    """
     return EfficientNet(input_shape,
                         DEFAULT_BLOCK_LIST,
                         width_coefficient=1.0,
@@ -576,6 +747,52 @@ def EfficientNetB2(input_shape=None,
                    dropout_rate=0.3,
                    drop_connect_rate=0.,
                    data_format=None):
+    """
+    Builds EfficientNet B2.
+
+    # Arguments:
+        input_shape: Optional shape tuple, the input shape
+            depends on the configuration, with a minimum
+            decided by the number of stride 2 operations.
+            When None is provided, it defaults to 224.
+            Considered the "Resolution" parameter from
+            the paper (inherently Resolution coefficient).
+        include_top: Whether to include the fully-connected
+            layer at the top of the network.
+        weights: `None` (random initialization) or
+            `imagenet` (ImageNet weights)
+        input_tensor: Optional Keras tensor (i.e. output of
+            `layers.Input()`)
+            to use as image input for the model.
+        pooling: Optional pooling mode for feature extraction
+            when `include_top` is `False`.
+            - `None` means that the output of the model
+                will be the 4D tensor output of the
+                last convolutional layer.
+            - `avg` means that global average pooling
+                will be applied to the output of the
+                last convolutional layer, and thus
+                the output of the model will be a
+                2D tensor.
+            - `max` means that global max pooling will
+                be applied.
+        classes: Optional number of classes to classify images
+            into, only to be specified if `include_top` is True, and
+            if no `weights` argument is specified.
+        dropout_rate: Float, percentage of random dropout.
+        drop_connect_rate: Float, percentage of random droped
+            connections.
+        data_format: "channels_first" or "channels_last". If left
+            as None, defaults to the value set in ~/.keras.
+
+    # Raises:
+        - ValueError: If weights are not in 'imagenet' or None.
+        - ValueError: If weights are 'imagenet' and `classes` is
+            not 1000.
+
+    # Returns:
+        A Keras Model.
+    """
     return EfficientNet(input_shape,
                         DEFAULT_BLOCK_LIST,
                         width_coefficient=1.1,
@@ -600,6 +817,52 @@ def EfficientNetB3(input_shape=None,
                    dropout_rate=0.3,
                    drop_connect_rate=0.,
                    data_format=None):
+    """
+    Builds EfficientNet B3.
+
+    # Arguments:
+        input_shape: Optional shape tuple, the input shape
+            depends on the configuration, with a minimum
+            decided by the number of stride 2 operations.
+            When None is provided, it defaults to 224.
+            Considered the "Resolution" parameter from
+            the paper (inherently Resolution coefficient).
+        include_top: Whether to include the fully-connected
+            layer at the top of the network.
+        weights: `None` (random initialization) or
+            `imagenet` (ImageNet weights)
+        input_tensor: Optional Keras tensor (i.e. output of
+            `layers.Input()`)
+            to use as image input for the model.
+        pooling: Optional pooling mode for feature extraction
+            when `include_top` is `False`.
+            - `None` means that the output of the model
+                will be the 4D tensor output of the
+                last convolutional layer.
+            - `avg` means that global average pooling
+                will be applied to the output of the
+                last convolutional layer, and thus
+                the output of the model will be a
+                2D tensor.
+            - `max` means that global max pooling will
+                be applied.
+        classes: Optional number of classes to classify images
+            into, only to be specified if `include_top` is True, and
+            if no `weights` argument is specified.
+        dropout_rate: Float, percentage of random dropout.
+        drop_connect_rate: Float, percentage of random droped
+            connections.
+        data_format: "channels_first" or "channels_last". If left
+            as None, defaults to the value set in ~/.keras.
+
+    # Raises:
+        - ValueError: If weights are not in 'imagenet' or None.
+        - ValueError: If weights are 'imagenet' and `classes` is
+            not 1000.
+
+    # Returns:
+        A Keras Model.
+    """
     return EfficientNet(input_shape,
                         DEFAULT_BLOCK_LIST,
                         width_coefficient=1.2,
@@ -624,6 +887,52 @@ def EfficientNetB4(input_shape=None,
                    dropout_rate=0.4,
                    drop_connect_rate=0.,
                    data_format=None):
+    """
+    Builds EfficientNet B4.
+
+    # Arguments:
+        input_shape: Optional shape tuple, the input shape
+            depends on the configuration, with a minimum
+            decided by the number of stride 2 operations.
+            When None is provided, it defaults to 224.
+            Considered the "Resolution" parameter from
+            the paper (inherently Resolution coefficient).
+        include_top: Whether to include the fully-connected
+            layer at the top of the network.
+        weights: `None` (random initialization) or
+            `imagenet` (ImageNet weights)
+        input_tensor: Optional Keras tensor (i.e. output of
+            `layers.Input()`)
+            to use as image input for the model.
+        pooling: Optional pooling mode for feature extraction
+            when `include_top` is `False`.
+            - `None` means that the output of the model
+                will be the 4D tensor output of the
+                last convolutional layer.
+            - `avg` means that global average pooling
+                will be applied to the output of the
+                last convolutional layer, and thus
+                the output of the model will be a
+                2D tensor.
+            - `max` means that global max pooling will
+                be applied.
+        classes: Optional number of classes to classify images
+            into, only to be specified if `include_top` is True, and
+            if no `weights` argument is specified.
+        dropout_rate: Float, percentage of random dropout.
+        drop_connect_rate: Float, percentage of random droped
+            connections.
+        data_format: "channels_first" or "channels_last". If left
+            as None, defaults to the value set in ~/.keras.
+
+    # Raises:
+        - ValueError: If weights are not in 'imagenet' or None.
+        - ValueError: If weights are 'imagenet' and `classes` is
+            not 1000.
+
+    # Returns:
+        A Keras Model.
+    """
     return EfficientNet(input_shape,
                         DEFAULT_BLOCK_LIST,
                         width_coefficient=1.4,
@@ -648,6 +957,52 @@ def EfficientNetB5(input_shape=None,
                    dropout_rate=0.4,
                    drop_connect_rate=0.,
                    data_format=None):
+    """
+    Builds EfficientNet B5.
+
+    # Arguments:
+        input_shape: Optional shape tuple, the input shape
+            depends on the configuration, with a minimum
+            decided by the number of stride 2 operations.
+            When None is provided, it defaults to 224.
+            Considered the "Resolution" parameter from
+            the paper (inherently Resolution coefficient).
+        include_top: Whether to include the fully-connected
+            layer at the top of the network.
+        weights: `None` (random initialization) or
+            `imagenet` (ImageNet weights)
+        input_tensor: Optional Keras tensor (i.e. output of
+            `layers.Input()`)
+            to use as image input for the model.
+        pooling: Optional pooling mode for feature extraction
+            when `include_top` is `False`.
+            - `None` means that the output of the model
+                will be the 4D tensor output of the
+                last convolutional layer.
+            - `avg` means that global average pooling
+                will be applied to the output of the
+                last convolutional layer, and thus
+                the output of the model will be a
+                2D tensor.
+            - `max` means that global max pooling will
+                be applied.
+        classes: Optional number of classes to classify images
+            into, only to be specified if `include_top` is True, and
+            if no `weights` argument is specified.
+        dropout_rate: Float, percentage of random dropout.
+        drop_connect_rate: Float, percentage of random droped
+            connections.
+        data_format: "channels_first" or "channels_last". If left
+            as None, defaults to the value set in ~/.keras.
+
+    # Raises:
+        - ValueError: If weights are not in 'imagenet' or None.
+        - ValueError: If weights are 'imagenet' and `classes` is
+            not 1000.
+
+    # Returns:
+        A Keras Model.
+    """
     return EfficientNet(input_shape,
                         DEFAULT_BLOCK_LIST,
                         width_coefficient=1.6,
@@ -672,6 +1027,52 @@ def EfficientNetB6(input_shape=None,
                    dropout_rate=0.5,
                    drop_connect_rate=0.,
                    data_format=None):
+    """
+    Builds EfficientNet B6.
+
+    # Arguments:
+        input_shape: Optional shape tuple, the input shape
+            depends on the configuration, with a minimum
+            decided by the number of stride 2 operations.
+            When None is provided, it defaults to 224.
+            Considered the "Resolution" parameter from
+            the paper (inherently Resolution coefficient).
+        include_top: Whether to include the fully-connected
+            layer at the top of the network.
+        weights: `None` (random initialization) or
+            `imagenet` (ImageNet weights)
+        input_tensor: Optional Keras tensor (i.e. output of
+            `layers.Input()`)
+            to use as image input for the model.
+        pooling: Optional pooling mode for feature extraction
+            when `include_top` is `False`.
+            - `None` means that the output of the model
+                will be the 4D tensor output of the
+                last convolutional layer.
+            - `avg` means that global average pooling
+                will be applied to the output of the
+                last convolutional layer, and thus
+                the output of the model will be a
+                2D tensor.
+            - `max` means that global max pooling will
+                be applied.
+        classes: Optional number of classes to classify images
+            into, only to be specified if `include_top` is True, and
+            if no `weights` argument is specified.
+        dropout_rate: Float, percentage of random dropout.
+        drop_connect_rate: Float, percentage of random droped
+            connections.
+        data_format: "channels_first" or "channels_last". If left
+            as None, defaults to the value set in ~/.keras.
+
+    # Raises:
+        - ValueError: If weights are not in 'imagenet' or None.
+        - ValueError: If weights are 'imagenet' and `classes` is
+            not 1000.
+
+    # Returns:
+        A Keras Model.
+    """
     return EfficientNet(input_shape,
                         DEFAULT_BLOCK_LIST,
                         width_coefficient=1.8,
@@ -696,6 +1097,52 @@ def EfficientNetB7(input_shape=None,
                    dropout_rate=0.5,
                    drop_connect_rate=0.,
                    data_format=None):
+    """
+    Builds EfficientNet B7.
+
+    # Arguments:
+        input_shape: Optional shape tuple, the input shape
+            depends on the configuration, with a minimum
+            decided by the number of stride 2 operations.
+            When None is provided, it defaults to 224.
+            Considered the "Resolution" parameter from
+            the paper (inherently Resolution coefficient).
+        include_top: Whether to include the fully-connected
+            layer at the top of the network.
+        weights: `None` (random initialization) or
+            `imagenet` (ImageNet weights)
+        input_tensor: Optional Keras tensor (i.e. output of
+            `layers.Input()`)
+            to use as image input for the model.
+        pooling: Optional pooling mode for feature extraction
+            when `include_top` is `False`.
+            - `None` means that the output of the model
+                will be the 4D tensor output of the
+                last convolutional layer.
+            - `avg` means that global average pooling
+                will be applied to the output of the
+                last convolutional layer, and thus
+                the output of the model will be a
+                2D tensor.
+            - `max` means that global max pooling will
+                be applied.
+        classes: Optional number of classes to classify images
+            into, only to be specified if `include_top` is True, and
+            if no `weights` argument is specified.
+        dropout_rate: Float, percentage of random dropout.
+        drop_connect_rate: Float, percentage of random droped
+            connections.
+        data_format: "channels_first" or "channels_last". If left
+            as None, defaults to the value set in ~/.keras.
+
+    # Raises:
+        - ValueError: If weights are not in 'imagenet' or None.
+        - ValueError: If weights are 'imagenet' and `classes` is
+            not 1000.
+
+    # Returns:
+        A Keras Model.
+    """
     return EfficientNet(input_shape,
                         DEFAULT_BLOCK_LIST,
                         width_coefficient=2.0,
