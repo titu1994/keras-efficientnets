@@ -26,17 +26,51 @@ In doing so, and using Neural Architecture Search to get the base configuration 
 
 <img src="https://raw.githubusercontent.com/tensorflow/tpu/master/models/official/efficientnet/g3doc/params.png" height=100% width=49%> <img src="https://raw.githubusercontent.com/tensorflow/tpu/master/models/official/efficientnet/g3doc/flops.png" height=100% width=49%>
 
+# Installation
+
+## From Master branch:
+
+```
+pip install git+https://github.com/titu1994/keras-efficientnets.git
+
+OR
+
+git clone https://github.com/titu1994/keras-efficientnets.git
+cd keras-efficientnets
+pip install .
+```
+
+## From PyPI:
+
+````$ pip install keras_efficientnets```
+
 # Usage
 Simply import `efficientnet.py` and call either the model builder `EfficientNet` or the pre-built versions `EfficientNetBX` where `X` ranger from 0 to 7.
 
 ```python
-from efficientnet import EfficientNetB0
+from keras_efficientnet import EfficientNetB0
 
 model = EfficientNetBXinput_size, classes=1000, include_top=True, weights='imagenet')
 ```
 
+To construct custom EfficientNets, use the `EfficientNet` builder. The `EfficientNet` builder code requires a list of `BlockArgs`
+as input to define the structure of each block in model. A default set of `BlockArgs` are provided in `keras_efficientnets.config`.
+
+```python
+from keras_efficientnet import EfficientNet, BlockArgs
+
+block_args_list = [
+    # First number is `input_channels`, second is `output_channels`.
+    BlockArgs(32, 16, kernel_size=3, strides=(1, 1), num_repeat=1, se_ratio=0.25, expand_ratio=1),
+    BlockArgs(16, 24, kernel_size=3, strides=(2, 2), num_repeat=2, se_ratio=0.25, expand_ratio=6),
+    ...
+]
+
+model = EfficientNet(input_shape, block_args_list, ...)
+```
+
 # Requirements
-- Tensorflow 1.13+
+- Tensorflow 1.13+ (CPU or GPU version must be installed *before* installation of this library)
 - Keras 2.2.4+
 
 # References
