@@ -47,7 +47,7 @@ __all__ = ['EfficientNet',
 
 
 def preprocess_input(x, data_format=None):
-    return _preprocess(x, data_format, mode='torch')
+    return _preprocess(x, data_format, mode='torch', backend=K)
 
 
 # Obtained from https://github.com/tensorflow/tpu/blob/master/models/official/efficientnet/efficientnet_model.py
