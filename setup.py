@@ -1,7 +1,9 @@
 import io
 import os
 import re
-from setuptools import find_packages, setup
+import sys
+from shutil import rmtree
+from setuptools import find_packages, setup, Command
 
 # Package arguments
 PACKAGE_NAME = "keras_efficientnets"
@@ -53,6 +55,40 @@ except FileNotFoundError:
     LONG_DESCRIPTION = SHORT_DESCRIPION
 
 
+class UploadCommand(Command):
+    description = 'Build, install and upload package with cleanup.'
+    user_options = []
+
+    def run(self):
+        try:
+            self.status('Removing previous builds...')
+            rmtree(os.path.join(base_path, 'dist'))
+        except OSError:
+            pass
+
+        self.status('Building Source and Wheel (universal) distribution...')
+        os.system('{0} setup.py sdist bdist_wheel'.format(sys.executable))
+
+        self.status('Uploading the package to PyPI via Twine...')
+        os.system('twine upload dist/*')
+
+        self.status('Pushing git tags...')
+        os.system('git tag v{0}'.format(get_version()))
+        os.system('git push --tags')
+
+        sys.exit()
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    @staticmethod
+    def status(s):
+        print(s)
+
+
 setup(
     name=PACKAGE_NAME,
     version=get_version(),
@@ -79,4 +115,8 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ),
     test_suite="tests",
+    # python setup.py upload
+    cmdclass={
+        'upload': UploadCommand,
+    },
 )
