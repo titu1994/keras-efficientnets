@@ -56,7 +56,7 @@ except FileNotFoundError:
 
 
 class UploadCommand(Command):
-    description = 'Build, install and upload package with cleanup.'
+    description = 'Build, install and upload tag to git with cleanup.'
     user_options = []
 
     def run(self):
@@ -68,9 +68,6 @@ class UploadCommand(Command):
 
         self.status('Building Source and Wheel (universal) distribution...')
         os.system('{0} setup.py sdist bdist_wheel'.format(sys.executable))
-
-        self.status('Uploading the package to PyPI via Twine...')
-        os.system('twine upload dist/*')
 
         self.status('Pushing git tags...')
         os.system('git tag v{0}'.format(get_version()))
