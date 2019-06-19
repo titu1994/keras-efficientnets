@@ -73,6 +73,13 @@ class UploadCommand(Command):
         os.system('git tag v{0}'.format(get_version()))
         os.system('git push --tags')
 
+        try:
+            self.status('Removing build artifacts...')
+            rmtree(os.path.join(base_path, 'build'))
+            rmtree(os.path.join(base_path, 'keras_efficientnets.egg-info'))
+        except OSError:
+            pass
+
         sys.exit()
 
     def initialize_options(self):
