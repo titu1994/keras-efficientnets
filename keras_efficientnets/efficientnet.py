@@ -28,7 +28,7 @@ from keras.utils import get_file, get_source_inputs
 from keras_applications.imagenet_utils import _obtain_input_shape
 from keras_applications.imagenet_utils import preprocess_input as _preprocess
 
-from keras_efficientnets.config import BlockArgs, DEFAULT_BLOCK_LIST
+from keras_efficientnets.config import BlockArgs, get_default_block_list
 from keras_efficientnets.custom_objects import EfficientNetConvInitializer
 from keras_efficientnets.custom_objects import EfficientNetDenseInitializer
 from keras_efficientnets.custom_objects import Swish, DropConnect
@@ -315,7 +315,7 @@ def EfficientNet(input_shape,
         default_size = 224
 
     if block_args_list is None:
-        block_args_list = DEFAULT_BLOCK_LIST
+        block_args_list = get_default_block_list()
 
     # count number of strides to compute min size
     stride_count = 1
@@ -435,7 +435,7 @@ def EfficientNet(input_shape,
                     cache_subdir='models')
             else:
                 weights_path = get_file(
-                    'efficientnet-b0_notop.h5.h5',
+                    'efficientnet-b0_notop.h5',
                     "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b0_notop.h5",
                     cache_subdir='models')
             model.load_weights(weights_path)
@@ -448,7 +448,7 @@ def EfficientNet(input_shape,
                     cache_subdir='models')
             else:
                 weights_path = get_file(
-                    'efficientnet-b1_notop.h5.h5',
+                    'efficientnet-b1_notop.h5',
                     "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b1_notop.h5",
                     cache_subdir='models')
             model.load_weights(weights_path)
@@ -461,7 +461,7 @@ def EfficientNet(input_shape,
                     cache_subdir='models')
             else:
                 weights_path = get_file(
-                    'efficientnet-b2_notop.h5.h5',
+                    'efficientnet-b2_notop.h5',
                     "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b2_notop.h5",
                     cache_subdir='models')
             model.load_weights(weights_path)
@@ -487,7 +487,7 @@ def EfficientNet(input_shape,
                     cache_subdir='models')
             else:
                 weights_path = get_file(
-                    'efficientnet-b4_notoph5',
+                    'efficientnet-b4_notop.h5',
                     "https://github.com/titu1994/keras-efficientnets/releases/download/v0.1/efficientnet-b4_notop.h5",
                     cache_subdir='models')
             model.load_weights(weights_path)
@@ -596,7 +596,7 @@ def EfficientNetB0(input_shape=None,
         A Keras Model.
     """
     return EfficientNet(input_shape,
-                        DEFAULT_BLOCK_LIST,
+                        get_default_block_list(),
                         width_coefficient=1.0,
                         depth_coefficient=1.0,
                         include_top=include_top,
@@ -666,7 +666,7 @@ def EfficientNetB1(input_shape=None,
         A Keras Model.
     """
     return EfficientNet(input_shape,
-                        DEFAULT_BLOCK_LIST,
+                        get_default_block_list(),
                         width_coefficient=1.0,
                         depth_coefficient=1.1,
                         include_top=include_top,
@@ -736,7 +736,7 @@ def EfficientNetB2(input_shape=None,
         A Keras Model.
     """
     return EfficientNet(input_shape,
-                        DEFAULT_BLOCK_LIST,
+                        get_default_block_list(),
                         width_coefficient=1.1,
                         depth_coefficient=1.2,
                         include_top=include_top,
@@ -806,7 +806,7 @@ def EfficientNetB3(input_shape=None,
         A Keras Model.
     """
     return EfficientNet(input_shape,
-                        DEFAULT_BLOCK_LIST,
+                        get_default_block_list(),
                         width_coefficient=1.2,
                         depth_coefficient=1.4,
                         include_top=include_top,
@@ -876,7 +876,7 @@ def EfficientNetB4(input_shape=None,
         A Keras Model.
     """
     return EfficientNet(input_shape,
-                        DEFAULT_BLOCK_LIST,
+                        get_default_block_list(),
                         width_coefficient=1.4,
                         depth_coefficient=1.8,
                         include_top=include_top,
@@ -946,7 +946,7 @@ def EfficientNetB5(input_shape=None,
         A Keras Model.
     """
     return EfficientNet(input_shape,
-                        DEFAULT_BLOCK_LIST,
+                        get_default_block_list(),
                         width_coefficient=1.6,
                         depth_coefficient=2.2,
                         include_top=include_top,
@@ -1016,7 +1016,7 @@ def EfficientNetB6(input_shape=None,
         A Keras Model.
     """
     return EfficientNet(input_shape,
-                        DEFAULT_BLOCK_LIST,
+                        get_default_block_list(),
                         width_coefficient=1.8,
                         depth_coefficient=2.6,
                         include_top=include_top,
@@ -1086,7 +1086,7 @@ def EfficientNetB7(input_shape=None,
         A Keras Model.
     """
     return EfficientNet(input_shape,
-                        DEFAULT_BLOCK_LIST,
+                        get_default_block_list(),
                         width_coefficient=2.0,
                         depth_coefficient=3.1,
                         include_top=include_top,

@@ -96,7 +96,7 @@ class UploadCommand(Command):
 setup(
     name=PACKAGE_NAME,
     version=get_version(),
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests']),
     url=URL,
     download_url=URL,
     python_requires=REQUIRED_PYTHON,

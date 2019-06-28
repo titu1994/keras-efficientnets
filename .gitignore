@@ -108,3 +108,5 @@ extract_weights/*
 dist/*
 build/*
 
+# Pycharm
+.idea
