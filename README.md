@@ -1,4 +1,6 @@
 # EfficientNets in Keras
+[![Build Status](https://travis-ci.org/titu1994/keras-efficientnets.svg?branch=master)](https://travis-ci.org/titu1994/keras-efficientnets)
+
 Keras implementation of EfficientNets from the paper [EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks](https://arxiv.org/abs/1905.11946).
 
 Contains code to build the EfficientNets B0-B7 from the paper, and includes weights for configurations B0-B3. B4-B7 weights will be ported when made available from the Tensorflow repository.
