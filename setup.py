@@ -13,7 +13,7 @@ LICENCE = 'MIT'
 
 # Extra requirements and configs
 EXTRA_REQUIREMENTS = {
-    'test': ['pytest'],
+    'test': ['pytest', 'pillow'],
 }
 REQUIRED_PYTHON = ">=3.0.0"  # Can be None, or a string value
 
