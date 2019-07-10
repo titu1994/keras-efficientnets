@@ -505,6 +505,8 @@ def EfficientNet(input_shape,
                     cache_subdir='models')
             model.load_weights(weights_path)
 
+        # TODO: When weights for efficientnet-b6 and efficientnet-b7 becomes available, uncomment this section and update 
+        #           the ValueError message below (line 537: ValueError('ImageNet weights can only be loaded with EfficientNetB0-5'))
         # elif default_size == 528:
         #     if include_top:
         #         weights_path = get_file(
@@ -532,7 +534,7 @@ def EfficientNet(input_shape,
         #     model.load_weights(weights_path)
 
         else:
-            raise ValueError('ImageNet weights can only be loaded with EfficientNetB0-7')
+            raise ValueError('ImageNet weights can only be loaded with EfficientNetB0-5')
 
     elif weights is not None:
         model.load_weights(weights)
