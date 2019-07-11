@@ -71,6 +71,45 @@ block_args_list = [
 model = EfficientNet(input_shape, block_args_list, ...)
 ```
 
+# Computing Valid Compound Coefficients
+In the paper, compound coefficients are obtained via simple grid search to find optimal values of `alpha`,
+`beta` and `gamma` while keeping `phi` as 1.
+
+This library provides a utility function to compute valid candidates that satisfy a user defined criterion
+function (the one from the paper is provided as the default cost function), and quickly computes
+the set of hyper parameters that closely satisfy the cost function (here, MSE between the value and max cost permissible).
+
+An example is shown below which uses the default parameters from the paper. The user can change the number of coefficients
+as well as the cost function itself in order to get different values of the compound coefficients.
+
+```python
+from keras_efficientnets.optimize import optimize_coefficients
+from keras_efficientnets.optimize import get_compound_coeff_func
+
+results = optimize_coefficients(phi=1., max_cost=2.0, search_per_coeff=10)
+cost_func = get_compound_coeff_func(phi=1.0, max_cost=2.0)
+
+print("Num unique configs = ", len(results))
+for i in range(10):  # print just the first 10 results
+    print(i + 1, results[i], "Cost :", cost_func(results[i]))
+```
+
+Increase the number of search scopes using `search_per_coeff` to some larger int value. You could also combine this
+with `tol` to compute a vast set of coefficients, and then select only those that have a cost value lower than the
+specified tolerance.
+
+```python
+from keras_efficientnets.optimize import optimize_coefficients
+from keras_efficientnets.optimize import get_compound_coeff_func
+
+results = optimize_coefficients(phi=1., max_cost=2.0, search_per_coeff=10)
+cost_func = get_compound_coeff_func(phi=1.0, max_cost=2.0, search_per_coeff=10, tol=1e-10)
+
+print("Num unique configs = ", len(results))
+for i in range(10):  # print just the first 10 results
+    print(i + 1, results[i], "Cost :", cost_func(results[i]))
+```
+
 # Requirements
 - Tensorflow 1.13+ (CPU or GPU version must be installed *before* installation of this library)
 - Keras 2.2.4+
