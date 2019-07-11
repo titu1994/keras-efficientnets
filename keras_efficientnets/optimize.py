@@ -117,7 +117,7 @@ def optimize_coefficients(num_coeff=3, cost_func=None, phi=1.0, max_cost=2.0,
     if tol is not None:
         tol = float(tol)
         cost_scores = np.array([cost_func(xi) for xi in param_set])
-        param_set = param_set[np.where(cost_scores < tol)]
+        param_set = param_set[np.where(cost_scores <= tol)]
 
     if save_coeff:
         np.save('param_coeff.npy', param_set)
