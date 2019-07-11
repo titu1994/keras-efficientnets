@@ -110,3 +110,7 @@ build/*
 
 # Pycharm
 .idea
+
+# Numpy
+*.npy
+*.npz
