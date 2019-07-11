@@ -110,8 +110,6 @@ def optimize_coefficients(num_coeff=3, cost_func=None, phi=1.0, max_cost=2.0,
         res = minimize(cost_func, x0, method='SLSQP', constraints=ineq_constraints)
         param_set[ix] = res.x
 
-    param_set = param_set.reshape((search_per_coeff ** 3, 3))
-
     # compute a minimum tolerance of the cost function
     # to select it in the candidate list.
     if tol is not None:
