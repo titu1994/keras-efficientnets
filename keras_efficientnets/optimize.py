@@ -46,7 +46,7 @@ def get_compound_coeff_func(phi=1.0, max_cost=2.0):
 
 
 def optimize_coefficients(num_coeff=3, cost_func=None, phi=1.0, max_cost=2.0,
-                          search_per_coeff=4, save_coeff=True):
+                          search_per_coeff=4, save_coeff=True, tol=None):
     """
     Computes the possible values of any number of coefficients,
     given a cost function, phi and max cost permissible.
@@ -71,6 +71,8 @@ def optimize_coefficients(num_coeff=3, cost_func=None, phi=1.0, max_cost=2.0,
             `search_per_coeff` ^ `num_coeff`.
         save_coeff: bool, whether to save the resulting coefficients
             into the file `param_coeff.npy` in current working dir.
+        tol: float tolerance of error in the cost function. Used to
+            select candidates which have a cost less than the tolerance.
 
     # Returns:
         A numpy array of shape [search_per_coeff ^ num_coeff, num_coeff],
@@ -81,14 +83,18 @@ def optimize_coefficients(num_coeff=3, cost_func=None, phi=1.0, max_cost=2.0,
     max_cost = float(max_cost)
     search_per_coeff = int(search_per_coeff)
 
+    # if user defined cost function is not provided, use the one from
+    # the paper in reference.
     if cost_func is None:
         cost_func = get_compound_coeff_func(phi, max_cost)
 
+    # prepare inequality constraints
     ineq_constraints = {
         'type': 'ineq',
         'fun': lambda x: x - 1.
     }
 
+    # Prepare a matrix to store results
     param_range = [search_per_coeff ** num_coeff, num_coeff]
     param_set = np.zeros(param_range)
 
@@ -99,25 +105,21 @@ def optimize_coefficients(num_coeff=3, cost_func=None, phi=1.0, max_cost=2.0,
 
     param_grid = ParameterGrid(grid)
     for ix, param in enumerate(param_grid):
+        # create a vector for the cost function and minimise using SLSQP
         x0 = np.array([param[i] for i in range(num_coeff)])
         res = minimize(cost_func, x0, method='SLSQP', constraints=ineq_constraints)
         param_set[ix] = res.x
 
     param_set = param_set.reshape((search_per_coeff ** 3, 3))
 
+    # compute a minimum tolerance of the cost function
+    # to select it in the candidate list.
+    if tol is not None:
+        tol = float(tol)
+        cost_scores = np.array([cost_func(xi) for xi in param_set])
+        param_set = param_set[np.where(cost_scores < tol)]
+
     if save_coeff:
         np.save('param_coeff.npy', param_set)
 
     return param_set
-
-
-if __name__ == '__main__':
-
-    cost_func = get_compound_coeff_func(phi=1.0, max_cost=2.0)
-    results = optimize_coefficients(num_coeff=3, phi=1., max_cost=2.0, search_per_coeff=10)
-
-    print("Num unique configs = ", len(results))
-    for i in range(10):
-        print(i + 1, results[i], "Cost :", cost_func(results[i]))
-
-
