@@ -92,7 +92,7 @@ class BlockArgs(object):
         if block.se_ratio > 0 and block.se_ratio <= 1:
             args.append('se%s' % block.se_ratio)
 
-        if block.id_skip is False:
+        if block.identity_skip is False:
             args.append('noskip')
 
         return '_'.join(args)
@@ -121,14 +121,15 @@ class BlockArgs(object):
 
 # Default list of blocks for EfficientNets
 def get_default_block_list():
-    DEFAULT_BLOCK_LIST = [
-        BlockArgs(32, 16, kernel_size=3, strides=(1, 1), num_repeat=1, se_ratio=0.25, expand_ratio=1),
-        BlockArgs(16, 24, kernel_size=3, strides=(2, 2), num_repeat=2, se_ratio=0.25, expand_ratio=6),
-        BlockArgs(24, 40, kernel_size=5, strides=(2, 2), num_repeat=2, se_ratio=0.25, expand_ratio=6),
-        BlockArgs(40, 80, kernel_size=3, strides=(2, 2), num_repeat=3, se_ratio=0.25, expand_ratio=6),
-        BlockArgs(80, 112, kernel_size=5, strides=(1, 1), num_repeat=3, se_ratio=0.25, expand_ratio=6),
-        BlockArgs(112, 192, kernel_size=5, strides=(2, 2), num_repeat=4, se_ratio=0.25, expand_ratio=6),
-        BlockArgs(192, 320, kernel_size=3, strides=(1, 1), num_repeat=1, se_ratio=0.25, expand_ratio=6),
-    ]
+    blocks_args = ['r1_k3_s11_e1_i32_o16_se0.25',
+                 'r2_k3_s22_e6_i16_o24_se0.25',
+                 'r2_k5_s22_e6_i24_o40_se0.25',
+                 'r3_k3_s22_e6_i40_o80_se0.25',
+                 'r3_k5_s11_e6_i80_o112_se0.25',
+                 'r4_k5_s22_e6_i112_o192_se0.25',
+                 'r1_k3_s11_e6_i192_o320_se0.25']
+    
+    DEFAULT_BLOCK_LIST = [BlockArgs.from_block_string(s)
+                          for s in blocks_args]
 
     return DEFAULT_BLOCK_LIST
