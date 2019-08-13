@@ -92,7 +92,7 @@ class BlockArgs(object):
         if block.se_ratio > 0 and block.se_ratio <= 1:
             args.append('se%s' % block.se_ratio)
 
-        if block.id_skip is False:
+        if block.identity_skip is False:
             args.append('noskip')
 
         return '_'.join(args)
