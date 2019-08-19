@@ -17,6 +17,7 @@
   EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks.
   ICML'19, https://arxiv.org/abs/1905.11946
 """
+import os
 import math
 from typing import List
 
@@ -1103,7 +1104,6 @@ def EfficientNetB7(input_shape=None,
 
 
 if __name__ == '__main__':
-    import os
     from keras.models import load_model
 
     model = EfficientNetB0(include_top=True)
