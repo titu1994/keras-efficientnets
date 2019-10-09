@@ -31,7 +31,7 @@ class EfficientNetConvInitializer(initializers.Initializer):
 
         kernel_height, kernel_width, _, out_filters = shape
         fan_out = int(kernel_height * kernel_width * out_filters)
-        return tf.random.random_normal(
+        return tf.random.normal(
             shape, mean=0.0, stddev=np.sqrt(2.0 / fan_out), dtype=dtype)
 
 
@@ -58,7 +58,7 @@ class EfficientNetDenseInitializer(initializers.Initializer):
         dtype = dtype or K.floatx()
 
         init_range = 1.0 / np.sqrt(shape[1])
-        return tf.random.random_uniform(shape, -init_range, init_range, dtype=dtype)
+        return tf.random.uniform(shape, -init_range, init_range, dtype=dtype)
 
 
 # Obtained from https://github.com/tensorflow/tpu/blob/master/models/official/efficientnet/efficientnet_model.py
@@ -87,7 +87,7 @@ class DropConnect(layers.Layer):
             # Compute drop_connect tensor
             batch_size = tf.shape(inputs)[0]
             random_tensor = keep_prob
-            random_tensor += tf.random_uniform([batch_size, 1, 1, 1], dtype=inputs.dtype)
+            random_tensor += tf.random.uniform([batch_size, 1, 1, 1], dtype=inputs.dtype)
             binary_tensor = tf.floor(random_tensor)
             output = (inputs / keep_prob) * binary_tensor
             return output
