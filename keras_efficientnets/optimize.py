@@ -2,6 +2,18 @@ import numpy as np
 from scipy.optimize import minimize
 from sklearn.model_selection import ParameterGrid
 
+try:
+    import inspect
+    _inspect_available = True
+except ImportError:
+    _inspect_available = False
+
+try:
+    from joblib import Parallel, delayed
+    _joblib_available = True
+except ImportError:
+    _joblib_available = False
+
 
 def get_compound_coeff_func(phi=1.0, max_cost=2.0):
     """
@@ -28,7 +40,7 @@ def get_compound_coeff_func(phi=1.0, max_cost=2.0):
     # References:
         - [EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks](https://arxiv.org/abs/1905.11946)
     """
-    def compound_coeff(x):
+    def compound_coeff(x, phi=phi, max_cost=max_cost):
         depth = alpha = x[0]
         width = beta = x[1]
         resolution = gamma = x[2]
@@ -45,8 +57,34 @@ def get_compound_coeff_func(phi=1.0, max_cost=2.0):
     return compound_coeff
 
 
-def optimize_coefficients(num_coeff=3, cost_func=None, phi=1.0, max_cost=2.0,
-                          search_per_coeff=4, save_coeff=True, tol=None):
+def _sequential_optimize(param_grid, param_set, num_coeff, ineq_constraints,
+                         verbose):
+    param_holder = np.empty((num_coeff,))
+
+    for ix, param in enumerate(param_grid):
+        # create a vector for the cost function and minimise using SLSQP
+        for i in range(num_coeff):
+            param_holder[i] = param[i]
+        x0 = param_holder
+        res = minimize(loss_func, x0, method='SLSQP', constraints=ineq_constraints)
+        param_set[ix] = res.x
+
+        if verbose:
+            if (ix + 1) % 1000 == 0:
+                print("Computed {:6d} parameter combinations...".format(ix + 1))
+
+    return param_set
+
+
+def _joblib_optimize(param, num_coeff, ineq_constraints):
+    x0 = np.asarray([param[i] for i in range(num_coeff)])
+    res = minimize(loss_func, x0, method='SLSQP', constraints=ineq_constraints)
+    return res.x
+
+
+def optimize_coefficients(num_coeff=3, loss_func=None, phi=1.0, max_cost=2.0,
+                          search_per_coeff=4, sort_by_loss=False, save_coeff=True,
+                          tol=None, verbose=True):
     """
     Computes the possible values of any number of coefficients,
     given a cost function, phi and max cost permissible.
@@ -69,10 +107,13 @@ def optimize_coefficients(num_coeff=3, cost_func=None, phi=1.0, max_cost=2.0,
         search_per_coeff: int declaring the number of values tried
             per coefficient. Constructs a search space of size
             `search_per_coeff` ^ `num_coeff`.
+        sort_by_loss: bool. Whether to sort the result set by its loss
+            value, in order of lowest loss first.
         save_coeff: bool, whether to save the resulting coefficients
             into the file `param_coeff.npy` in current working dir.
         tol: float tolerance of error in the cost function. Used to
             select candidates which have a cost less than the tolerance.
+        verbose: bool, whether to print messages during execution.
 
     # Returns:
         A numpy array of shape [search_per_coeff ^ num_coeff, num_coeff],
@@ -85,8 +126,8 @@ def optimize_coefficients(num_coeff=3, cost_func=None, phi=1.0, max_cost=2.0,
 
     # if user defined cost function is not provided, use the one from
     # the paper in reference.
-    if cost_func is None:
-        cost_func = get_compound_coeff_func(phi, max_cost)
+    if loss_func is None:
+        loss_func = get_compound_coeff_func(phi, max_cost)
 
     # prepare inequality constraints
     ineq_constraints = {
@@ -95,27 +136,65 @@ def optimize_coefficients(num_coeff=3, cost_func=None, phi=1.0, max_cost=2.0,
     }
 
     # Prepare a matrix to store results
-    param_range = [search_per_coeff ** num_coeff, num_coeff]
-    param_set = np.zeros(param_range)
+    num_samples = search_per_coeff ** num_coeff
+    param_range = [num_samples, num_coeff]
 
     # sorted by ParameterGrid acc to its key value, assuring sorted
     # behaviour for Python < 3.7.
     grid = {i: np.linspace(1.0, max_cost, num=search_per_coeff)
             for i in range(num_coeff)}
 
+    if verbose:
+        print("Preparing parameter grid...")
+        print("Number of parameter combinations :", num_samples)
+
     param_grid = ParameterGrid(grid)
-    for ix, param in enumerate(param_grid):
-        # create a vector for the cost function and minimise using SLSQP
-        x0 = np.array([param[i] for i in range(num_coeff)])
-        res = minimize(cost_func, x0, method='SLSQP', constraints=ineq_constraints)
-        param_set[ix] = res.x
+
+    if _joblib_available:
+        with Parallel(n_jobs=-1, verbose=10 if verbose else 0) as parallel:
+            param_set = parallel(delayed(_joblib_optimize)(param, num_coeff, ineq_constraints)
+                                 for param in param_grid)
+
+        param_set = np.asarray(param_set)
+    else:
+        if verbose and num_samples > 1000:
+            print("Consider using `joblib` library to speed up sequential "
+                  "computation of {} combinations of parameters".format(num_samples))
+
+        param_set = np.zeros(param_range)
+        param_set = _sequential_optimize(param_grid, param_set,
+                                         num_coeff=num_coeff,
+                                         ineq_constraints=ineq_constraints,
+                                         verbose=verbose)
 
     # compute a minimum tolerance of the cost function
     # to select it in the candidate list.
     if tol is not None:
+        if verbose:
+            print("Filtering out samples below tolerance threshold...")
+
         tol = float(tol)
-        cost_scores = np.array([cost_func(xi) for xi in param_set])
+        cost_scores = np.asarray([loss_func(xi) for xi in param_set])
         param_set = param_set[np.where(cost_scores <= tol)]
+    else:
+        cost_scores = None
+
+    # sort by lowest loss first
+    if sort_by_loss:
+        if verbose:
+            print("Sorting by loss...")
+
+        if cost_scores is None:
+            cost_scores = ([loss_func(xi) for xi in param_set])
+        else:
+            cost_scores = cost_scores.tolist()
+
+        cost_scores_id = [(idx, loss) for idx, loss in enumerate(cost_scores)]
+        cost_scores_id = sorted(cost_scores_id, key=lambda x: x[1])
+
+        ids = np.asarray([idx for idx, loss in cost_scores_id])
+        # reorder the original param set
+        param_set = param_set[ids, ...]
 
     if save_coeff:
         np.save('param_coeff.npy', param_set)
