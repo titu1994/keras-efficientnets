@@ -57,8 +57,8 @@ def get_compound_coeff_func(phi=1.0, max_cost=2.0):
     return compound_coeff
 
 
-def _sequential_optimize(param_grid, param_set, num_coeff, ineq_constraints,
-                         verbose):
+def _sequential_optimize(param_grid, param_set, loss_func,
+                         num_coeff, ineq_constraints, verbose):
     param_holder = np.empty((num_coeff,))
 
     for ix, param in enumerate(param_grid):
@@ -76,7 +76,7 @@ def _sequential_optimize(param_grid, param_set, num_coeff, ineq_constraints,
     return param_set
 
 
-def _joblib_optimize(param, num_coeff, ineq_constraints):
+def _joblib_optimize(param, loss_func, num_coeff, ineq_constraints):
     x0 = np.asarray([param[i] for i in range(num_coeff)])
     res = minimize(loss_func, x0, method='SLSQP', constraints=ineq_constraints)
     return res.x
@@ -152,7 +152,7 @@ def optimize_coefficients(num_coeff=3, loss_func=None, phi=1.0, max_cost=2.0,
 
     if _joblib_available:
         with Parallel(n_jobs=-1, verbose=10 if verbose else 0) as parallel:
-            param_set = parallel(delayed(_joblib_optimize)(param, num_coeff, ineq_constraints)
+            param_set = parallel(delayed(_joblib_optimize)(param, loss_func, num_coeff, ineq_constraints)
                                  for param in param_grid)
 
         param_set = np.asarray(param_set)
@@ -162,7 +162,7 @@ def optimize_coefficients(num_coeff=3, loss_func=None, phi=1.0, max_cost=2.0,
                   "computation of {} combinations of parameters".format(num_samples))
 
         param_set = np.zeros(param_range)
-        param_set = _sequential_optimize(param_grid, param_set,
+        param_set = _sequential_optimize(param_grid, param_set, loss_func,
                                          num_coeff=num_coeff,
                                          ineq_constraints=ineq_constraints,
                                          verbose=verbose)
@@ -200,3 +200,37 @@ def optimize_coefficients(num_coeff=3, loss_func=None, phi=1.0, max_cost=2.0,
         np.save('param_coeff.npy', param_set)
 
     return param_set
+
+
+if __name__ == '__main__':
+
+    def cost_func_wrapper(phi=1.0, max_cost=2.0):
+        def cost_func(x: np.ndarray, phi=phi, max_cost=max_cost) -> float:
+            depth = x[0] ** phi
+            width = x[1] ** phi
+            kernel_width = x[2] ** phi
+
+            cost = (depth * width ** 2 * kernel_width ** 0.5)
+            loss = (cost - max_cost) ** 2
+            return loss
+        return cost_func
+
+    phi = 1.0
+    loss_func = cost_func_wrapper(phi=phi, max_cost=2.0)
+
+    results = optimize_coefficients(num_coeff=3, loss_func=loss_func,
+                                    phi=1.0, max_cost=2.0, search_per_coeff=25,
+                                    save_coeff=False, tol=None, sort_by_loss=True)
+
+    print("Num unique configs = ", len(results))
+    for i in range(10):  # print just the first 10 results out of 1000 results
+        print(i + 1, results[i], "Cost :", loss_func(results[i]))
+
+    phi = 4.0
+    # params = [1.84, 1.007, 1.15]
+    params = [1.04163396, 1.33328223, 1.16665207]
+    cost = np.sqrt(loss_func(params, phi=phi, max_cost=0.))
+    print("x0", params[0] ** phi)
+    print("x1", params[1] ** phi)
+    print("x2", params[2] ** phi)
+    print(cost)
