@@ -3,7 +3,7 @@
 
 Keras implementation of EfficientNets from the paper [EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks](https://arxiv.org/abs/1905.11946).
 
-Contains code to build the EfficientNets B0-B7 from the paper, and includes weights for configurations B0-B3. B4-B7 weights will be ported when made available from the Tensorflow repository.
+Contains code to build the EfficientNets B0-B7 from the paper, and includes weights for configurations B0-B5. B6 and B7 weights will be ported when made available from the Tensorflow repository.
 
 Supports building any other configuration model of efficient nets as well, other than the B0-B7 variants.
 
